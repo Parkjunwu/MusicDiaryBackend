@@ -128,3 +128,17 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# AWS
+.aws
+credentials.csv
+musicdiary-2648a-firebase-adminsdk-ac3h6-49cc935e65.json
+
+# not file
+shift+com+.하고platform도함께
+
+.DS_Store
+*.rdb
+
+아카이브.zip
+built
