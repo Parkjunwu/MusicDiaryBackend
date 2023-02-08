@@ -90,7 +90,7 @@ export const pushNotificationSongSelected: SongSelectedType = async(client, whic
 //     if(notification.publishUser.followers.length !== 0) {
 //       // 디바이스 push 알림 전송
 //       const tokens = notification.publishUser.followers.map(user=>user.deviceToken);
-//       const whichUpload = isPost ? "게시물을" : "펫로그를"
+//       const whichUpload = isPost ? "게시물을" : "게시글를"
 //       const message = `${notification.publishUser.userName}  님이 새로운 ${whichUpload} 업로드 하였습니다.`;
 //       const uploadChannel = isPost ? channel.uploadPost : channel.uploadPetLog;
 //       sendManyPushNotification(uploadChannel,tokens,message);
@@ -114,11 +114,11 @@ export const pushNotificationSongSelected: SongSelectedType = async(client, whic
 //   // MY_COMMENT_GET_COMMENT                   // 유저의 댓글에 대댓글
 //   // MY_COMMENT_OF_COMMENT_GET_LIKE           // 유저의 대댓글에 좋아요
 //   // FOLLOW_ME                                // 유저를 팔로우
-//   // "MY_PETLOG_GET_LIKE"                     // 유저의 펫로그에 좋아요
-//   // "MY_PETLOG_GET_COMMENT"                  // 유저의 펫로그에 댓글
-//   // "MY_PETLOG_COMMENT_GET_LIKE"             // 유저의 펫로그 댓글에 좋아요
-//   // "MY_PETLOG_COMMENT_GET_COMMENT"          // 유저의 펫로그 댓글에 댓글
-//   // "MY_PETLOG_COMMENT_OF_COMMENT_GET_LIKE"  // 유저의 펫로그 대댓글에 좋아요
+//   // "MY_PETLOG_GET_LIKE"                     // 유저의 게시글에 좋아요
+//   // "MY_PETLOG_GET_COMMENT"                  // 유저의 게시글에 댓글
+//   // "MY_PETLOG_COMMENT_GET_LIKE"             // 유저의 게시글 댓글에 좋아요
+//   // "MY_PETLOG_COMMENT_GET_COMMENT"          // 유저의 게시글 댓글에 댓글
+//   // "MY_PETLOG_COMMENT_OF_COMMENT_GET_LIKE"  // 유저의 게시글 대댓글에 좋아요
 //   // 댓글에서 언급 도 만들어야 겠군. 대댓글 단거에 댓글 달린 것도 받는게 나을라나? 여기선 유저 언급한게 나을라나?
 //   // 알림이 많을 수록 좋을 듯. 그리고 유저간의 내용으로. 뭐가 있습니다 이런거보다는. 사람들은 새로운 거를 원함. 특히 다른 사람들의.
 
@@ -292,4 +292,78 @@ export const pushNotificationSongSelected: SongSelectedType = async(client, whic
 //   }
 // };
 
+type which = "MY_BOARD_GET_LIKE" | "MY_BOARD_GET_COMMENT" | "MY_BOARD_COMMENT_GET_LIKE" | "MY_BOARD_COMMENT_GET_COMMENT" | "MY_BOARD_COMMENT_OF_COMMENT_GET_LIKE";
+
+type RouteParam = {
+  commentId?: number,
+  commentOfCommentId?: number,
+  userId?: number,
+  userName?: string,
+}
+
+type BoardRouteParam = {
+  boardId: number,
+} & RouteParam;
+
+type BoardType = (
+  client: PrismaClient,
+  whichNotification: which,
+  subscribeUserId: number,
+  { boardId, commentId, commentOfCommentId, userId, userName}: BoardRouteParam
+) => Promise<void>
+
+// 걍 commentId,commentOfCommentId 로 써도 될듯?
+
+export const pushNotificationBoard: BoardType = async(client, whichNotification, subscribeUserId, {boardId,commentId,commentOfCommentId}) => {
+
+  try {
+    const notification = await client.notification.create({
+      data:{
+        which: whichNotification,
+        subscribeUserId,
+        ...( boardId && { boardId } ),
+        ...( commentId && { commentId } ),
+        ...( commentOfCommentId && { commentOfCommentId } ),
+        // ...( userId && { userId } ),
+      },
+    });
+
+    const userInfo = await client.user.findUnique({
+      where:{
+        id:subscribeUserId
+      },
+      select:{
+        userName:true,
+        deviceToken:true,
+      },
+    });
+
+    // 디바이스 push 알림 전송
+    const userName = userInfo.userName;
+    const token = userInfo.deviceToken;
+    // token null 이면 에러뜸
+    if(token){
+      const channelId = whichNotification;
+      const message = `${userName} 님이 ${getNotificationMessage(whichNotification)}`;
+      const paramsObj = {
+        ...( boardId && { boardId: String(boardId) } ),
+        ...( commentId && { commentId: String(commentId) } ),
+        ...( commentOfCommentId && { commentOfCommentId: String(commentOfCommentId) } ),
+        // ...( userId && { userId: String(userId) } ),
+        ...( userName && { userName }),
+        // ...( roomId && { roomId: String(roomId) }),
+        // ...( sendersUserName && { sendersUserName }),
+        // ...( currentUserId && { currentUserId: String(currentUserId) }),
+      }
+      
+      sendSinglePushNotification(channelId,token,message,paramsObj);
+    }
+    // subscription 전송
+    await pubsub.publish(NEW_NOTIFICATION,{userNotificationUpdate:notification});
+
+  } catch (e) {
+    console.log(e);
+    console.log("notification, subscription 에서 문제 발생")
+  }
+};
 

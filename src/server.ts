@@ -11,8 +11,8 @@ import client from "./client";
 // import graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.mjs');
 // import { default as graphqlUploadExpress } from 'graphql-upload/graphqlUploadExpress.mjs';
 
-// import { graphqlUploadExpress } from "graphql-upload";
-import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.js";
+import { graphqlUploadExpress } from "graphql-upload";
+// import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.js";
 // import graphqlUploadExpress from "./graphqlUploadExpress.js",
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
@@ -33,6 +33,10 @@ admin.initializeApp({
   const app = express();
   app.use(morgan('tiny'));
   app.use(graphqlUploadExpress());
+  // app.use(graphqlUploadExpress({
+  //   maxFileSize: 10000000, // 10 MB
+  //   maxFiles: 10,
+  // }));
 
   // load balancer response
   app.get('/', (req, res) => {

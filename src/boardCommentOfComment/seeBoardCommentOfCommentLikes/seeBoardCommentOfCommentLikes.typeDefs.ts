@@ -1,0 +1,11 @@
+import { gql } from "apollo-server-express";
+
+export default gql`
+  # 반환타입 seeCommentLikes 랑 똑같음. 거기에 SeeLikesResponse 있음.
+  type Query {
+    seeBoardCommentOfCommentLikes(
+      boardCommentOfCommentId: Int!,
+      cursorId: Int
+    ): SeeLikesResponse!
+  }
+`;

@@ -13,11 +13,11 @@ export default gql`
     createdAt:String!
     diaryId:Int
     # 클릭 시 해당 컴포넌트 보여주기 위함
+    boardId:Int
+    commentId:Int
+    commentOfCommentId:Int
     # postId:Int
-    # commentId:Int
-    # commentOfCommentId:Int
     # userId:Int
-    # petLogId:Int
   }
 
   # enum WhichNotification {

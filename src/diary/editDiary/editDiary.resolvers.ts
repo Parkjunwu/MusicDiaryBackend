@@ -97,13 +97,13 @@ const editDiaryFn: Resolver = async(_, {id, title, body, changeThumbNail, addFil
 
 
 
-  // 지금은 이미지만 쓸거라서 이거 넣음
-  if(addFileArr?.some(file=>file.file?.mimetype !== "image/jpeg")) {
-    console.log("mimetype : "+ JSON.stringify(addFileArr?.map(file=>file.file?.mimetype)))
-    console.error("editDiary // addFileArr get something not image or [Upload] getting error. Hacking possibility.");
-    // return { ok:false, error:"잘못된 형식입니다." };
-    return { ok:false, error:"사진 업로드에 실패하였습니다." };
-  }
+  // // 지금은 이미지만 쓸거라서 이거 넣음
+  // if(addFileArr?.some(file=>file.file?.mimetype !== "image/jpeg")) {
+  //   console.log("mimetype : "+ JSON.stringify(addFileArr?.map(file=>file.file?.mimetype)))
+  //   console.error("editDiary // addFileArr get something not image or [Upload] getting error. Hacking possibility.");
+  //   // return { ok:false, error:"잘못된 형식입니다." };
+  //   return { ok:false, error:"사진 업로드에 실패하였습니다." };
+  // }
 
 
 

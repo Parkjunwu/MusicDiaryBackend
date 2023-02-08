@@ -4,18 +4,27 @@ import nodemailer from "nodemailer";
 const requestEmailToAdminFn: Resolver = async (
   _,
   { text },
-  { logInUserId }
+  { logInUserId:userId, client}
 ) => {
   
-  const userId = logInUserId;
   const errorResult = { ok:false, error:"fail" };
+
+  let email: string;
+  userId && (email = (await client.user.findUnique({
+    where:{
+      id:userId,
+    },
+    select:{
+      email:true,
+    },
+  })).email)
   
   try {
     const html = `<div style="font-size:15px;">
         본문 : ${text}
       </div>
       <div style="font-size:13px;">
-        ${userId ? "유저 id : " + userId : ""}
+        ${userId ? `유저 id : ${userId}<br/>이메일 : ${email}` : ""}
       </div>`;
 
     const adminId = process.env.NAVER_ID;

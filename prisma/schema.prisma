@@ -57,23 +57,37 @@ model User {
   beforeY22              BeforeY22?
 
   ytIdArr Json?
+
+  // 차단 유저 id 목록, relation 은 안해도 될듯?
+  blockUsers   User[] @relation("BlockRelation")
+  blockedUsers User[] @relation("BlockRelation")
+
+  boards                     Board[]
+  boardLikes                 BoardLike[]
+  boardComments              BoardComment[]
+  boardCommentLikes          BoardCommentLike[]
+  boardCommentOfComments     BoardCommentOfComment[]
+  boardCommentOfCommentLikes BoardCommentOfCommentLike[]
 }
 
 // 알림 내용
 model Notification {
-  id              Int      @id @default(autoincrement())
+  id                 Int      @id @default(autoincrement())
   // 보낸 유저, 받는 유저 따로. 받는 유저는 없을 수도 있음
   // 근데 받는 유저는 굳이 연결 안하고 id 만 있어도 되겠네.
   // publishUser        User              @relation(fields: [publishUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   // publishUserId      Int
   // following 유저가 포스팅 한거는 받는 유저가 정해져 있지 않아. 글고 만약에 알림에 포스팅 사진, 내용 같이 보여줄거면 이미지, 내용 요소도 추가
   // 나중에 follower 이런거 들어가면 애매해지니까 그냥 subscribeUserId 로 음악 선정된거 알림 보내. which 도 넣어 그냥
-  subscribeUserId Int?
-  which           String
+  subscribeUserId    Int?
+  which              String
   // read 말고 그냥 user 에 읽은 시간 넣고 그 이후는 다 읽었다 하면 될듯. message 가 아니니까
   // read            Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  diaryId         Int?
+  createdAt          DateTime @default(now())
+  diaryId            Int?
+  boardId            Int?
+  commentId          Int?
+  commentOfCommentId Int?
 }
 
 // 회원가입 이메일 확인용 token 임. 그냥 Token 이라 하면 헷갈리니까 이렇게 씀.
@@ -182,4 +196,110 @@ model BeforeY22 {
   m12    Json?
   user   User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId Int   @unique
+}
+
+model Board {
+  id        Int            @id @default(autoincrement())
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    Int
+  title     String
+  file      Json // String[]
+  body      Json // String[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  thumbNail String?
+  // 차단도 추가. 해시태그?
+  // 얘네 추가할 때 데이터 다 지우고 만들어 아님 ? 로 넣던지
+  likes     BoardLike[]
+  comments  BoardComment[]
+  accused   BoardAccused[]
+}
+
+model BoardAccused {
+  id      Int     @id @default(autoincrement())
+  userId  Int
+  reason  Int
+  detail  String?
+  Board   Board   @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  boardId Int
+
+  @@unique([boardId, userId])
+}
+
+// 게시판의 해시태그
+// model HashTag {
+//   id            Int             @id @default(autoincrement())
+//   name          String          @unique
+//   createdAt     DateTime        @default(now())
+//   updatedAt     DateTime        @updatedAt
+//   // boards         Board[]
+//   // 관계로 대체
+//   BoardOnHashTag BoardOnHashTag[]
+// }
+
+// 게시판의 좋아요
+// 근데 좋아요를 한 사람들을 보여줄게 아니면 그냥 포스트에 LikeUserIds 이런식으로 넣기만 해도 될듯.
+model BoardLike {
+  id        Int      @id @default(autoincrement())
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  boardId   Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([boardId, userId])
+}
+
+// 게시판의 댓글
+model BoardComment {
+  id                    Int                     @id @default(autoincrement())
+  payload               String
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  board                 Board                   @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  userId                Int
+  boardId               Int
+  boardCommentLikes     BoardCommentLike[]
+  boardCommentOfComment BoardCommentOfComment[]
+}
+
+// 게시판의 댓글의 좋아요
+model BoardCommentLike {
+  id             Int          @id @default(autoincrement())
+  boardComment   BoardComment @relation(fields: [boardCommentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId         Int
+  boardCommentId Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([boardCommentId, userId])
+}
+
+// 게시판의 댓글의 댓글
+model BoardCommentOfComment {
+  id                         Int                         @id @default(autoincrement())
+  payload                    String
+  user                       User                        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  boardComment               BoardComment                @relation(fields: [boardCommentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  boardCommentOfCommentLikes BoardCommentOfCommentLike[]
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  userId                     Int
+  boardCommentId             Int
+}
+
+// 게시판의 댓글의 댓글의 좋아요
+model BoardCommentOfCommentLike {
+  id                      Int                   @id @default(autoincrement())
+  boardCommentOfComment   BoardCommentOfComment @relation(fields: [boardCommentOfCommentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user                    User                  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId                  Int
+  boardCommentOfCommentId Int
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  @@unique([boardCommentOfCommentId, userId])
 }

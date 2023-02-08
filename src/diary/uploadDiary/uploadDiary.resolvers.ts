@@ -74,11 +74,11 @@ const uploadDiaryFn: Resolver = async(_,{title,fileArr,body,thumbNailArr,isFirst
 
 
 
-  // 지금은 이미지만 쓸거라서 이거 넣음
-  if(fileArr.some(file=>file.file?.mimetype !== "image/jpeg")) {
-    console.error("uploadDiary // fileArr get something not image. Hacking possibility.");
-    return { ok:false, error:"잘못된 형식입니다." };
-  }
+  // // 지금은 이미지만 쓸거라서 이거 넣음
+  // if(fileArr.some(file=>file.file?.mimetype !== "image/jpeg")) {
+  //   console.error("uploadDiary // fileArr get something not image. Hacking possibility.");
+  //   return { ok:false, error:"잘못된 형식입니다." };
+  // }
   if(fileArr.length > 10) {
     return {ok:false, error:"10장 이상의 사진을 업로드 하실 수 없습니다."}
   }

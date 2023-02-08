@@ -23,9 +23,10 @@ const videoHlsEndNameAndExtension = "_hls.m3u8";
 export const async_uploadPhotoS3 = async(fileToUpload, userId, dateForUnique, folderName) => {
   try {
     // const { file: { filename, createReadStream, mimetype } } = await fileToUpload;
-    const { file } = await fileToUpload;
-    console.log("async_uploadPhotoS3 : " + JSON.stringify(file));
-    const { filename, createReadStream, mimetype } = file;
+    // const { file } = await fileToUpload;
+    // console.log("async_uploadPhotoS3 : " + JSON.stringify(file));
+    // const { filename, createReadStream, mimetype } = file;
+    const { filename, createReadStream, mimetype } = await fileToUpload; // 이게 맞네.. 시부럴
     // Cannot read properties of undefined (reading 'filename') 뜨는 경우가 있음. 왠진 몰라. 한번 그러면 계속 그러고 서버 다시 시작해야 됨. 왜 이런거지?
     // const getInfo = await fileToUpload;
     // console.log(getInfo)
@@ -78,7 +79,8 @@ export const async_uploadPhotoS3 = async(fileToUpload, userId, dateForUnique, fo
 // folderName S3 에 저장할 폴더명임.
 // export const async_uploadThumbNailS3 = async(fileToUpload, userId) => {
 export const async_uploadThumbNailS3 = async(fileToUpload, userId, dateForUnique) => {
-  const { file: { filename, createReadStream, mimetype } } = await fileToUpload;
+  // const { file: { filename, createReadStream, mimetype } } = await fileToUpload;
+  const { filename, createReadStream, mimetype } = await fileToUpload; // 이게 맞네.. 시부럴
 
   // console.log("mimetype : "+mimetype)
   // if(mimetype === "video/mp4") {
